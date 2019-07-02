@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!-- scan设置为true是定时扫描监测的配置文件是否发生变化，如果发生变化会自动加载配置文件，不用重启服务。debug设为false是不打印logback内部的信息，因为logback很稳定了，我们不需要让logback的日志来干扰我们的信息 -->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+	<!-- 定义参数常量，即全局变量 -->
+	<!-- log级别：TRACE<DEBUG<INFO<WARN<ERROR -->
+	<!-- 它会打印debug以上的日志 -->
+	<property name="log.level" value="debug" />
+	<!-- log保留多少天 -->
+	<property name="log.maxHistory" value="30" />
+	<!-- log存放的路径 -->
+	<property name="log.filePath" value="${catalina.base}"/>
+	<!-- 日志展现的格式 -->
+	<property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}-%msg%n"/>
+	
+	
+	<!-- appender是告诉我们输出介质是什么，我们要把日志输出到那些地方 -->
+	<!-- 控制台输出 -->
+	<appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+		<!-- 既将日志信息转换成字符串又将字符串输出到指定的地方 -->
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+	</appender>
+	
+	<!-- DEBUG -->
+	<!-- rolling是随着日志文件的大小、时间来滚动生成新的日志文件 -->
+	<appender name="debugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 文件路径 -->
+		<file>${log.filepath}/debug.log</file>
+		<!-- 滚动策略 TimeBasedRollingPolicy基于时间去滚动-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 文件名称 -->
+			<fileNamePattern>${log.filePath}/debug/debug.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+			<maxHistory>${log.maxHistory}</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>DEBUG</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+	
+	<!-- INFO -->
+	<!-- rolling是随着日志文件的大小、时间来滚动生成新的日志文件 -->
+	<appender name="infoAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 文件路径 -->
+		<file>${log.filepath}/info.log</file>
+		<!-- 滚动策略 TimeBasedRollingPolicy基于时间去滚动-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 文件名称 -->
+			<fileNamePattern>${log.filePath}/info/info.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+			<maxHistory>${log.maxHistory}</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>INFO</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+	
+	<!-- ERROR -->
+	<!-- rolling是随着日志文件的大小、时间来滚动生成新的日志文件 -->
+	<appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<!-- 文件路径 -->
+		<file>${log.filepath}/error.log</file>
+		<!-- 滚动策略 TimeBasedRollingPolicy基于时间去滚动-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- 文件名称 -->
+			<fileNamePattern>${log.filePath}/error/error.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+			<maxHistory>${log.maxHistory}</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+	
+	<!-- logger主要用来存放我们的日志对象，同时告诉logback需要关注哪个package的信息,name就是指定要关注的package -->
+	<!-- level是告诉logback只记录哪个级别以上的日志 -->
+	<!-- additivity是继承父类root的信息，意思是也会在控制台中打印logger的这三种信息 -->
+	<logger name="com.zyx.o2o" level="${log.level}" additivity="true">
+		<!-- logger与appender进行绑定，logger对象会往这三个文件去输出信息 -->
+		<appender-ref ref="debugAppender"/>
+		<appender-ref ref="infoAppender"/>
+		<appender-ref ref="errorAppender"/>
+	</logger>
+	<root level="info">
+		<appender-ref ref="consoleAppender"/>
+	</root>
+	
+	
+	<!-- <appender name="INFO-FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${catalina.base}/webapps/myo2o/logs/info/info.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${catalina.base}/webapps/myo2o/logs/info/info.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>1024MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{55} -
+				%msg%n
+			</pattern>
+		</layout>
+	</appender>
+	<appender name="ACCESS-FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>
+			${catalina.base}/webapps/myo2o/logs/access/access.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${catalina.base}/webapps/myo2o/logs/access/access.%d{yyyy-MM-dd}.%i.log.zip</FileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy
+				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>1024MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{55} -
+				%msg%n
+			</pattern>
+		</layout>
+	</appender>
+	<logger name="com.imooc.myo2o" level="DEBUG" additivity="false">
+		<appender-ref ref="ACCESS-FILE" />
+	</logger>
+	<root level="INFO">
+		<appender-ref ref="INFO-FILE" />
+	</root> -->
+</configuration>
